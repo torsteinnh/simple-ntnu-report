@@ -193,11 +193,11 @@
       outline(title: toc-title)
       pagebreak()
     }
-    if show-figure_index {
+    if show-figure-index {
       outline(title: lof-title, target: figure.where(kind: image))
       pagebreak()
     }
-    if show-table_index {
+    if show-table-index {
       outline(title: lot-title, target: figure.where(kind: table))
       pagebreak()
     }
