@@ -1,6 +1,39 @@
-#import "@preview/zero:0.3.3": set-num
+#import "@preview/zero:0.5.0": set-num
 #import "@preview/swank-tex:0.1.0": *
-#import "@preview/icu-datetime:0.1.2": fmt-date
+#import "@preview/icu-datetime:0.2.0": fmt
+#import "@preview/codly:1.3.0": *
+#import "@preview/codly-languages:0.1.10": *
+
+
+// Utility for formatting units in math
+#let un(body) = $thin upright(body)$
+
+
+// Appendix
+// Thanks to the elsearticle template for the appendix implementation from which this is derived
+#let appendix(supplement, body) = {
+  set heading(numbering: "A.1.", supplement: supplement)
+  // Reset heading counter
+  counter(heading).update(0)
+
+  // Equation numbering
+  let numbering-eq = (..n) => {
+    let h1 = counter(heading).get().first()
+    numbering("(A.1a)", h1, ..n)
+  }
+  set math.equation(numbering: numbering-eq)
+
+  // Figure, Table and Listing numbering
+  let numbering-fig = n => {
+    let h1 = counter(heading).get().first()
+    numbering("A.1", h1, n)
+  }
+  show figure.where(kind: image): set figure(numbering: numbering-fig)
+  show figure.where(kind: table): set figure(numbering: numbering-fig)
+  show figure.where(kind: raw): set figure(numbering: numbering-fig)
+
+  body
+}
 
 
 // Utility function for printing out authors
@@ -52,13 +85,16 @@
     front-image: none, // Image content for front page, only works if length is long
     date: datetime.today(), // Required, all reports should have a date
     abstract: none, // Optional content for abstract
+    appendices: none, // Optional content for appendices
     bibfile: none, // Optional bibliography content, highly recommended
     bibstyle: "institute-of-electrical-and-electronics-engineers", // For example "american-psychological-association" or "institute-of-electrical-and-electronics-engineers"
     language: "bokmål", // One of: english, bokmål, nynorsk
     column-number: 1, // Should be 1 or 2
+    number-headings: true, // Determines if headings are numbered
     show-toc: true, // Determines if table of content is printed, only relevant for long reports
     show-figure-index: false, // Determines if list of figures is printed, only relevant for long reports
     show-table-index: false, // Determines if list of indices is printed, only relevant for long reports
+    show-listings-index: false, // Determines if list of listings is printed, only relevant for long reports
     body) = {
 
 
@@ -76,9 +112,14 @@
   
   set math.equation(numbering: "(1)")
   show math.equation: set text(weight: 400)
+  set math.mat(delim: "[")
+  set math.vec(delim: "[")
   
-  set heading(numbering: "1.1")
+  let heading-numbering = "1.1"
+  if not number-headings { heading-numbering = none }
+  set heading(numbering: heading-numbering)
   show selector(<nonumber>): set heading(numbering: none)
+  show selector(<nonumber>): set math.equation(numbering: none)
 
   set bibliography(style: bibstyle)
 
@@ -96,6 +137,11 @@
   show figure.caption: set align(start)
   show figure.caption.where(kind: table): set align(center)
 
+
+  // Listings
+  show: codly-init.with()
+  codly(languages: codly-languages)
+
   
   // Set language
   set text(lang: "en") if language == "english"
@@ -103,54 +149,73 @@
   
   let date-text
   let abstract-heading
+  let heading-supplement
+  let appendix-supplement
   let group-prefix
   let decimal-separator
   let bib-title
   let toc-title
   let lot-title
   let lof-title
+  let lol-title
   let figure-supplement
   let table-supplement
+  let listings-supplement
   if language == "english" {
-    date-text = fmt-date(date, locale: "en", length: "long")
+    date-text = fmt(date, locale: "en", length: "long")
     abstract-heading = "Abstract"
+    heading-supplement = "Section"
+    appendix-supplement = "Appendix"
     group-prefix = "Group"
     decimal-separator = "."
     bib-title = "References"
     toc-title = "Contents"
     lot-title = "List of Tables"
     lof-title = "List of Figures"
+    lol-title = "List of Listings"
     figure-supplement = "Figure"
     table-supplement = "Table"
+    listings-supplement = "Listing"
   } else if language == "bokmål" {
-    date-text = fmt-date(date, locale: "no", length: "medium")
+    date-text = fmt(date, locale: "no", length: "long")
     abstract-heading = "Sammendrag"
+    heading-supplement = "Avsnitt"
+    appendix-supplement = "Appendiks"
     group-prefix = "Gruppe"
     decimal-separator = ","
     bib-title = "Kilder"
     toc-title = "Innholdsfortegnelse"
     lot-title = "Tabelliste"
     lof-title = "Figurliste"
+    lol-title = "Kodeliste"
     figure-supplement = "Figur"
     table-supplement = "Tabell"
+    listings-supplement = "Kodeblokk"
   } else if language == "nynorsk" {
-    date-text = fmt-date(date, locale: "no", length: "medium")
+    date-text = fmt(date, locale: "no", length: "long")
     abstract-heading = "Samandrag"
+    heading-supplement = "Avsnitt"
+    appendix-supplement = "Appendiks"
     group-prefix = "Gruppe"
     decimal-separator = ","
     bib-title = "Kilder"
     toc-title = "Innhaldsliste"
     lot-title = "Tabelliste"
     lof-title = "Figurliste"
+    lol-title = "Kodeliste"
     figure-supplement = "Figur"
     table-supplement = "Tabell"
+    listings-supplement = "Kodeblokk"
   } else { assert(false, message: "Language " + language + " is not supported by this template.") }
   
   set-num(decimal-separator: decimal-separator)
   set bibliography(title: bib-title)
   show figure.where(kind: image): set figure(supplement: figure-supplement)
   show figure.where(kind: table): set figure(supplement: table-supplement)
+  show figure.where(kind: raw): set figure(supplement: listings-supplement)
 
+  set heading(supplement: heading-supplement)
+  
 
   // DOCUMENT CONTENT //
   
@@ -201,6 +266,10 @@
       outline(title: lot-title, target: figure.where(kind: table))
       pagebreak()
     }
+    if show-listings-index {
+      outline(title: lol-title, target: figure.where(kind: raw))
+      pagebreak()
+    }
     
 
     set page(numbering: "1", number-align: center)
@@ -215,6 +284,10 @@
       set page(columns: 1)
       bibfile
     }
+
+    pagebreak()
+    if appendices != none { show: appendix(appendix-supplement, appendices) }
+    
   }
   // Short report
   else if length == "short"{
@@ -257,5 +330,8 @@
     if bibfile != none {
       bibfile
     }
+
+    if appendices != none { show: appendix(appendix-supplement, appendices) }
+
   }
 }

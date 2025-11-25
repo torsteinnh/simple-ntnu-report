@@ -1,6 +1,6 @@
 [package]
 name       = "simple-ntnu-report"
-version    = "0.1.0"
+version    = "0.1.1"
 entrypoint = "src/simple-ntnu-report.typ"
 
 authors    = ["Torstein Nordgård-Hansen"]
