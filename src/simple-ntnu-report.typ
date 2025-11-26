@@ -285,9 +285,10 @@
       bibfile
     }
 
-    pagebreak()
-    if appendices != none { show: appendix(appendix-supplement, appendices) }
-    
+    if appendices != none {
+      pagebreak()
+      show: appendix(appendix-supplement, appendices)
+    }
   }
   // Short report
   else if length == "short"{
