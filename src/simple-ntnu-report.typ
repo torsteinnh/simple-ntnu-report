@@ -95,6 +95,9 @@
     show-figure-index: false, // Determines if list of figures is printed, only relevant for long reports
     show-table-index: false, // Determines if list of indices is printed, only relevant for long reports
     show-listings-index: false, // Determines if list of listings is printed, only relevant for long reports
+    text-size: 11pt, // Determines the text size
+    text-font: "New Computer Modern", // Determines the font used
+    page-paper: "a4", // Determines the page size of the document
     body) = {
 
 
@@ -104,7 +107,8 @@
   
   // Set the document's basic properties.
   set document(author: authors.map(a => a.name), title: title, date: date)
-  set text(font: "New Computer Modern", size: 11pt)
+  set text(font: text-font, size: text-size)
+  set page(paper: page-paper)
 
   
   // Formatting

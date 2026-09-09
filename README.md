@@ -29,6 +29,9 @@ The template takes the following arguments:
 - show-figure-index: Optional bool, default false. Determines if list of figures is printed, only relevant for long reports.
 - show-table-index: Optional bool, default false. Determines if list of indices is printed, only relevant for long reports.
 - show-listings-index: Optional bool, default false. Determines if list of listings is printed, only relevant for long reports.
+- text-size: Optional size, default 11pt
+- text-font: Optional font name, default "Computer new modern"
+- page-paper: Optional page paper configuration, default "a4"
 
 ## Quality of life
 In adition to the template function, this package allso supplies the `un` function, which formats units propperly with a tiny space and no cursive in math mode.
